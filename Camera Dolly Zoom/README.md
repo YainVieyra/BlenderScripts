@@ -1,11 +1,11 @@
 # Location
-Camera Data context > Lens > Dolly Effect
+Camera Data context > Lens > Dolly Zoom
 (The camera will have to be set in Perspective mode)
 
 Blender version: 2.78 and above
 
-# Camera Dolly Effect
-This script is used to set-up a driver in the Focal Length camera´s datablock towards an object working as a focal point, which size looks unchanged when moving the camera away and towards such point, and this way, creating the famous camera dolly effect tipically used in cinema.
+# Camera Dolly Zoom
+This script is used to set-up a driver in the Focal Length camera´s datablock towards an object working as a focal point, which size looks unchanged when moving the camera away and towards such point, and this way, creating the famous camera dolly zoom effect tipically used in cinema.
 
 The driver is set over the Focal Length parameter of the camera, so, when moving the camera or the focal object, the Focal Length changes automatically with the distance between the two.
 
