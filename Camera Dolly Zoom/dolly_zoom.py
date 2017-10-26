@@ -43,18 +43,17 @@ def get_driver_lens(data):
     return None
 
 def upd_lens_object(self, context):
-    prev_lens = None
     d = get_driver_lens(self)
+    focal_length = None
     if d:
         expr = d.driver.expression
         if "*" in expr:
-            try:
-                prev_lens = float(expr.split("*")[0])
-            except ValueError:
-                pass
+            word = expr.split("*")[0]
+            if "focal_length" == word:
+                focal_length = True
         self.driver_remove("lens")
-    if prev_lens:
-        self.lens = prev_lens
+    if focal_length:
+        self.lens = self.driver_lens
     
     if self.lens_object:
         camera = context.object
@@ -75,6 +74,13 @@ def upd_lens_object(self, context):
         DRIVER.driver.expression = "distance"
         
         variable = DRIVER.driver.variables.new()
+        variable.name = "focal_length"
+        variable.type = "SINGLE_PROP"
+        variable.targets[0].id_type = "CAMERA"
+        variable.targets[0].id = self
+        variable.targets[0].data_path = "driver_lens"
+        
+        variable = DRIVER.driver.variables.new()
         variable.name = "distance"
         variable.type = "LOC_DIFF"
         variable.targets[0].id = camera
@@ -83,8 +89,8 @@ def upd_lens_object(self, context):
         bpy.context.scene.update()
 
         distance = self.lens
-
-        expression = "{}*(distance/{})".format(self.driver_lens, distance)
+        
+        expression = "focal_length*(distance/{})".format(distance)
         DRIVER.driver.expression = expression
     else:
         self.property_unset("lens_object")
@@ -110,14 +116,13 @@ def Dolly_Zoom_Panel(self, context):
     
     if data.type in "PERSP":
         d = get_driver_lens(data)
-        lens = None
+        focal_length = None
         if d:
             expr = d.driver.expression
             if "*" in expr:
-                try:
-                    lens = float(expr.split("*")[0])
-                except ValueError:
-                    pass
+                word = expr.split("*")[0]
+                if "focal_length" == word:
+                    focal_length = True
         
         col = layout.column(align=True)
         
@@ -134,16 +139,9 @@ def Dolly_Zoom_Panel(self, context):
         
         col = split.column()
         col.prop_search(data, "lens_object", bpy.data, "objects", text="")
-        if lens:
+        if focal_length:
             col.prop(data, "driver_lens")
         
-
-def upd_driver_lens(self, context):
-    d = get_driver_lens(self)
-    expr = d.driver.expression
-    expr = expr.split("*")[1]
-    d.driver.expression = "*".join((str(self.driver_lens), expr))
-
 
 def register():
     bpy.utils.register_module(__name__)
@@ -151,8 +149,8 @@ def register():
         bpy.types.Camera.lens_object = PointerProperty(type=bpy.types.Object, update=upd_lens_object)
     else:
         bpy.types.Camera.lens_object = StringProperty(default="", update=upd_lens_object)
-    bpy.types.Camera.driver_lens = FloatProperty(name="Initial Focal Length", min=1, update=upd_driver_lens,
-                                                                    description="Initial Lens value to tweak current Focal Length driver")
+    bpy.types.Camera.driver_lens = FloatProperty(name="Initial Focal Length", min=1,
+                                                 description="Initial Lens value to tweak current Focal Length driver")
     bpy.types.DATA_PT_lens.append(Dolly_Zoom_Panel)
 
 def unregister():
